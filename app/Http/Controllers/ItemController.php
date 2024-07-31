@@ -18,31 +18,31 @@ class ItemController extends Controller
         $this->itemRepository = $itemRepository;
     }
 
-    public function index()
+    public function index(): JsonResponse
     {
         $items = $this->itemRepository->getAll();
         return new JsonResponse(ItemResource::collection($items), Response::HTTP_OK);
     }
 
-    public function show($id)
+    public function show($id): JsonResponse
     {
         $item = $this->itemRepository->getById($id);
         return new JsonResponse(new ItemResource($item), Response::HTTP_OK);
     }
 
-    public function store(StoreItemRequest $request)
+    public function store(StoreItemRequest $request): JsonResponse
     {
         $item = $this->itemRepository->create($request->validated());
         return new JsonResponse(new ItemResource($item), Response::HTTP_CREATED);
     }
 
-    public function update(UpdateItemRequest $request, $id)
+    public function update(UpdateItemRequest $request, $id): JsonResponse
     {
         $item = $this->itemRepository->update($id, $request->validated());
         return new JsonResponse(new ItemResource($item), Response::HTTP_OK);
     }
 
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         $this->itemRepository->delete($id);
         return new JsonResponse(['message' => 'Item deleted successfully'], Response::HTTP_OK);
