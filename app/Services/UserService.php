@@ -16,6 +16,5 @@ class UserService implements Contracts\UserServiceInterface
     public function create(UserDTO $userDTO): void
     {
         $user = $this->userRepository->create($userDTO);
-        // TODO: Implement create() method.
     }
 }
