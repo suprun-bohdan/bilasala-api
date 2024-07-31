@@ -2,48 +2,42 @@
 
 namespace App\Http\Controllers;
 
+use App\DTO\UserDTO;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
+use App\Repositories\UserRepository;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use Laravel\Socialite\Facades\Socialite;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
-    public function register(Request $request): JsonResponse
+    protected UserRepository $userRepository;
+
+    public function __construct(UserRepository $userRepository)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-        ]);
+        $this->userRepository = $userRepository;
+    }
 
-        if ($validator->fails()) {
-            return new JsonResponse($validator->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
+    public function register(RegisterRequest $request): JsonResponse
+    {
+        $userDTO = new UserDTO(
+            $request->name,
+            $request->email,
+            $request->password
+        );
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        $user = $this->userRepository->create($userDTO);
 
         return new JsonResponse(['message' => 'User registered successfully', 'user' => $user], Response::HTTP_CREATED);
     }
 
-    public function login(Request $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return new JsonResponse($validator->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
@@ -62,20 +56,20 @@ class AuthController extends Controller
         return new JsonResponse(['message' => 'User logged out successfully'], Response::HTTP_OK);
     }
 
-    public function redirectToFacebook()
+    public function redirectToFacebook() : RedirectResponse
     {
-        return Socialite::driver('facebook')->stateless()->redirect();
+        return Socialite::driver('facebook')->redirect();
     }
 
     public function handleFacebookCallback(): JsonResponse
     {
-        $user = Socialite::driver('facebook')->stateless()->user();
+        $facebookUser = Socialite::driver('facebook')->user();
 
         $authUser = User::updateOrCreate([
-            'provider_id' => $user->id,
+            'provider_id' => $facebookUser->id,
         ], [
-            'name' => $user->name,
-            'email' => $user->email,
+            'name' => $facebookUser->name,
+            'email' => $facebookUser->email,
             'provider' => 'facebook',
         ]);
 
