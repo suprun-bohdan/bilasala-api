@@ -4,9 +4,9 @@ namespace App\DTO;
 
 class UserDTO
 {
-    public static $name;
-    public static $email;
-    public static $password;
+    public string $name;
+    public string $email;
+    public string $password;
 
     public function __construct(string $name, string $email, string $password)
     {
@@ -14,4 +14,20 @@ class UserDTO
         $this->email = $email;
         $this->password = $password;
     }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
 }
+
