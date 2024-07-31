@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use App\Repositories\UserRepository;
+use App\Services\Contracts\UserServiceInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -16,11 +17,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
-    protected UserRepository $userRepository;
-
-    public function __construct(UserRepository $userRepository)
+    public function __construct(private readonly UserServiceInterface $userService)
     {
-        $this->userRepository = $userRepository;
     }
 
     public function register(RegisterRequest $request): JsonResponse
@@ -31,7 +29,7 @@ class AuthController extends Controller
             $request->password
         );
 
-        $user = $this->userRepository->create($userDTO);
+        $user = $this->userService->create($userDTO);
 
         return new JsonResponse(['message' => 'User registered successfully', 'user' => $user], Response::HTTP_CREATED);
     }
@@ -56,7 +54,7 @@ class AuthController extends Controller
         return new JsonResponse(['message' => 'User logged out successfully'], Response::HTTP_OK);
     }
 
-    public function redirectToFacebook() : RedirectResponse
+    public function redirectToFacebook(): RedirectResponse
     {
         return Socialite::driver('facebook')->redirect();
     }

@@ -2,17 +2,15 @@
 
 namespace App\DTO;
 
+/**
+ * @property $email
+ * @property $name
+ * @property $password
+ */
 class UserDTO
 {
-    public string $name;
-    public string $email;
-    public string $password;
-
-    public function __construct(string $name, string $email, string $password)
+    public function __construct(private readonly string $name, private readonly string $email, private readonly string $password)
     {
-        $this->name = $name;
-        $this->email = $email;
-        $this->password = $password;
     }
 
     public function getName(): string
